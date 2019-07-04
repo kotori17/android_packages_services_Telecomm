@@ -70,6 +70,7 @@ public class BluetoothDeviceManager {
                             mBluetoothHeadsetService = null;
                             Log.i(BluetoothDeviceManager.this, "Lost BluetoothHeadset service. " +
                                     "Removing all tracked devices.");
+                            mBluetoothRouteManager.onActiveDeviceChanged(null);
                             List<BluetoothDevice> devicesToRemove = new LinkedList<>(
                                     mConnectedDevicesByAddress.values());
                             mConnectedDevicesByAddress.clear();
@@ -145,6 +146,11 @@ public class BluetoothDeviceManager {
 
     void onDeviceConnected(BluetoothDevice device) {
         synchronized (mLock) {
+            if (mBluetoothHeadsetService == null) {
+                Log.w(this, "Headset service null when receiving device added broadcast");
+                return;
+            }
+
             if (!mConnectedDevicesByAddress.containsKey(device.getAddress())) {
                 mConnectedDevicesByAddress.put(device.getAddress(), device);
                 mBluetoothRouteManager.onDeviceAdded(device.getAddress());
